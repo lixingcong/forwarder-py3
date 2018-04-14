@@ -1,8 +1,20 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
+import os
+
+try:
+	zvirtenv = os.path.join(os.environ['OPENSHIFT_HOMEDIR'], PYCART_DIR, 'virtenv', 'bin', 'activate_this.py')
+	exec(compile(open(zvirtenv).read(), zvirtenv, 'exec'), dict(__file__ = zvirtenv))
+except:
+	print("Error virtenv");
+	pass
+
+
+
 import bottle
 from bottle import get, post, request
+
 
 @get('/my_form')
 def show_form():

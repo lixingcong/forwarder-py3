@@ -88,6 +88,7 @@ def Home():
 		return html_content
 
 if __name__ == '__main__':
-	bottle.run(app, reloader=True)         # run in a local test server
+	print("run in main")
+	bottle.run(app, host='0.0.0.0', reloader=True)         # run in a local test server
 # else:
 # 	application=bottle.default_app()       # run in a WSGI server

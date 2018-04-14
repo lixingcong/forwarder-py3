@@ -33,7 +33,7 @@ import urllib.request
 import os
 
 # set a sys-env 'FORWARDER_KEYS' to 'key1,key2,key3' to get rid of default keys
-ALLOW_KEYS = ['xzSlE','ILbou','DukPL']
+DEFAULT_ALLOW_KEYS = ['xzSlE','ILbou','DukPL']
 
 application = app = bottle.Bottle()
 
@@ -51,7 +51,7 @@ def Home():
 		else:
 			raise Exception('sys-keys', 'empty')
 	except:
-		allow_keys=ALLOW_KEYS
+		allow_keys=DEFAULT_ALLOW_KEYS
 	
 	if k and k not in allow_keys:
 		return bottle.HTTPResponse(status=403, body='Invalid Auth Key!')

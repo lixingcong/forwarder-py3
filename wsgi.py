@@ -1,22 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import os
-import sys
-
-try:
-	PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
-	zvirtenv = os.path.join(os.environ['OPENSHIFT_HOMEDIR'], PYCART_DIR, 'virtenv', 'bin', 'activate_this.py')
-	exec(compile(open(zvirtenv).read(), zvirtenv, 'exec'), dict(__file__ = zvirtenv))
-except:
-	print("Error virtenv");
-	pass
-
-#
-# IMPORTANT: Put any additional includes below this line.  If placed above this
-# line, it's possible required libraries won't be in your searchable path
-#
-
 help_str="""
 <h1>python网络请求转发器</h1>
 
@@ -35,7 +19,7 @@ http://hostedurl?u=url&k=AUTHKEY&t=timeout
 解析：<br>
 hostedurl: 你搭建的转发服务器的URL<br>
 url: 需要转发到url，需要先使用urllib.quote转义，特别是如果有&符号<br>
-AUTHKEY: 为了防止滥用，需要提供一个key，为ALLOW_KEYS里面的任何一个值<br>
+AUTHKEY: 为了防止滥用，需要提供一个key，为ALLOW_KEYS里面的任何一个值(可以使用环境变量FORWARDER_KEYS覆盖)<br>
 timeout: [可选]超时时间，默认为30s<br>
 """
 
@@ -46,8 +30,10 @@ __Author__ = "lixingcong"
 from wsgiref.util import is_hop_by_hop
 import socket, bottle
 import urllib.request
+import os
 
-ALLOW_KEYS = ('xzSlE','ILbou','DukPL')
+# set a sys-env 'FORWARDER_KEYS' to 'key1,key2,key3' to get rid of default keys
+ALLOW_KEYS = ['xzSlE','ILbou','DukPL']
 
 application = app = bottle.Bottle()
 
@@ -56,8 +42,19 @@ def Home():
 	resp = bottle.response
 	qry = bottle.request.query
 	url,k,timeout = qry.u, qry.k, int(qry.get('t','30'))
-	if k and k not in ALLOW_KEYS:
-		return 'Auth Key is invalid!'
+	
+	allow_keys=[]
+	try:
+		allow_keys_sys=os.environ['FORWARDER_KEYS']
+		if allow_keys_sys is not None:
+			allow_keys=allow_keys_sys.rsplit(',')
+		else:
+			raise Exception('sys-keys', 'empty')
+	except:
+		allow_keys=ALLOW_KEYS
+	
+	if k and k not in allow_keys:
+		return bottle.HTTPResponse(status=403, body='Invalid Auth Key!')
 
 	if url and k:
 		url = urllib.request.unquote(url)
